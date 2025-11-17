@@ -1,8 +1,0 @@
-[build]
-  base = "FRONTEND"
-  command = "npm run build"
-  publish = "dist"
-
-[build.environment]
-  NODE_VERSION = "18"
-  NPM_FLAGS = "--include=dev"

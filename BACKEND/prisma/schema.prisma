@@ -1,26 +1,17 @@
-// prisma/schema.prisma
+// Ensure role is valid and matches enum exactly
+const validRoles = ['BUYER', 'AGENT'];
+const formattedRole = role ? role.toUpperCase() : 'BUYER';
 
-generator client {
-  provider = "prisma-client-js"
-  //  No custom output, default path (node_modules/@prisma/client)
+if (!validRoles.includes(formattedRole)) {
+  return res.status(400).json({ message: 'Role must be either BUYER or AGENT' });
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model User{
-  id Int @id @default(autoincrement())
-  name String
-  email String @unique
-  phone  String
-  password String
-  role Role   @default(BUYER) // temporary default
-  createdAt DateTime @default(now())
-}
-
-enum Role{
-  BUYER
-  AGENT
-}
+const user = await prisma.user.create({
+  data: {
+    name,
+    email,
+    phone,
+    password: hashPass,
+    role: formattedRole,
+  },
+});

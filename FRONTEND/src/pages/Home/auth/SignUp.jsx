@@ -23,27 +23,36 @@ export default function SignupPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
+const handleSignup = async (e) => {
+  e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
+  if (formData.password !== formData.confirmPassword) {
+    toast.error("Passwords do not match");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      await signUp({ ...formData, role: role.toUpperCase() });
-      toast.success("Account created successfully! Please log in.");
-      navigate("/login");
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Signup failed. Try again later."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    // Pass role inside the data object
+  const res = await signUp({ ...formData, role: role.toUpperCase() });
+    console.log("Signup response:", res);
+
+    toast.success("Account created successfully! Please log in.");
+    navigate("/login");
+  } catch (error) {
+    console.error("Signup error:", error);
+
+    const message =
+      error.response?.data?.message || // Axios error response
+      error.message ||                 // JS error message
+      "Signup failed. Try again later."; 
+
+    toast.error(message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fff8ec] to-[#ffe3c2]">

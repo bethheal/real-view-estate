@@ -30,12 +30,26 @@ export const AuthProvider = ({ children }) => {
     navigate(role === "agent" ? "/agent-dashboard" : "/buyer-dashboard");
   };
 
-  // Signup
-  const signUp = async (formData, role) => {
-    const res = await api.post("/auth/signup", { ...formData, role: role.toUpperCase() });
+ // Signup
+const signUp = async (data) => {
+  try {
+    const res = await api.post("/auth/signup", data); // data must include role
+
+    console.log("Signup response:", res.data);
+
+    if (res.data.success === false || !res.data.token) {
+      throw new Error(res.data.message || "Signup failed. Try again later.");
+    }
+
     if (res.data.token) localStorage.setItem("token", res.data.token);
-    navigate("/login");
-  };
+
+    return res.data;
+  } catch (error) {
+    console.error("Signup error:", error);
+    throw error;
+  }
+};
+
 
   // Forgot password
   const forgotPassword = async (email) => {

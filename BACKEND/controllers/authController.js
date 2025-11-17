@@ -11,12 +11,15 @@ export const signup = async (req, res) => {
 
   try {
     // Validate all fields including role
-    if (!name || !email || !phone || !password || !confirmPassword || !role) {
+    if (!name || !email || !phone || !password || !confirmPassword ) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     // Validate role
-    if (!['BUYER', 'AGENT'].includes(role.toUpperCase())) {
+     const validRoles = ['BUYER', 'AGENT'];
+    const formattedRole = role?.toUpperCase() || 'BUYER';
+
+    if (!validRoles.includes(formattedRole)) {
       return res.status(400).json({ message: 'Role must be either BUYER or AGENT' });
     }
 
@@ -68,7 +71,7 @@ export const signup = async (req, res) => {
 
   } catch (error) {
     console.log("signup error: ", error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Internal server error', details: error.message });
   }
 };
 
