@@ -1,4 +1,5 @@
 [build]
+  base = "FRONTEND"
   command = "npm run build"
   publish = "FRONTEND/build"
 
