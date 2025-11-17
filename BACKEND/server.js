@@ -1,51 +1,34 @@
 import express from "express";
 import dotenv from "dotenv";
-import cors from "cors";                 // ✅ Add this
+import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import { PrismaClient } from "@prisma/client";
 import passport from "passport";
 
 dotenv.config();
-
 const app = express();
-
 
 const allowedOrigins = [
   "http://localhost:5173",
   "https://realeastateview.netlify.app"
 ];
 
-// Apply CORS to all routes
+// ✅ CORS middleware applied before routes
 app.use(
   cors({
     origin: function(origin, callback) {
-      if (!origin) return callback(null, true); // Postman, mobile apps
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("CORS policy: This origin is not allowed"));
-      }
+      if (!origin) return callback(null, true); // allow Postman, mobile apps
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("CORS policy: This origin is not allowed"));
     },
     methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"], // include OPTIONS
-    credentials: true,
+    credentials: true
   })
 );
 
-// Handle OPTIONS preflight requests for all routes
-app.options("*", cors({
-  origin: allowedOrigins,
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  credentials: true
-}));
-
-
-
 app.use(express.json());
 app.use(passport.initialize());
-
-const prisma = new PrismaClient();
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -55,7 +38,8 @@ app.get("/", (req, res) => {
   res.send("server is running");
 });
 
-//Connect Database
+// Connect Database
+const prisma = new PrismaClient();
 async function connectDB() {
   try {
     await prisma.$connect();
