@@ -1,7 +1,7 @@
 [build]
-  base = "realView-estate/FRONTEND"
+  base = "real-view-esatate/FRONTEND"
   command = "npm run build"
-  publish = "FRONTEND/dist"
+  publish = "FRONTEND/build"
 
 [build.environment]
   NODE_VERSION = "18"
