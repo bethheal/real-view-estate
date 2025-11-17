@@ -1,7 +1,7 @@
 [build]
   base = "FRONTEND"
   command = "npm run build"
-  publish = "FRONTEND/build"
+  publish = "build"
 
 [build.environment]
   NODE_VERSION = "18"
