@@ -1,5 +1,5 @@
 [build]
-  base = "real-view-esatate/FRONTEND"
+  base = "real-view-estate/FRONTEND"
   command = "npm run build"
   publish = "FRONTEND/build"
 
