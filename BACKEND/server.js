@@ -11,7 +11,9 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://realeastateview.netlify.app"
+    "https://real-view-estate-frontend.onrender.com"
+
+  
 ];
 
 // ✅ CORS middleware applied before routes
