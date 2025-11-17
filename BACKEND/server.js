@@ -10,14 +10,29 @@ dotenv.config();
 
 const app = express();
 
-// ✅ CORS FIX
+
+const allowedOrigins = [
+  "http://localhost:5173",                 // local dev
+  "https://realeastateview.netlify.app"   // deployed frontend
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function(origin, callback) {
+      // allow requests with no origin (like Postman or mobile apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("CORS policy: This origin is not allowed"));
+      }
+    },
     methods: "GET,POST,PUT,PATCH,DELETE",
-    credentials: true,
+    credentials: true, // allow cookies/auth headers
   })
 );
+
 
 app.use(express.json());
 app.use(passport.initialize());
