@@ -12,15 +12,15 @@ const app = express();
 
 
 const allowedOrigins = [
-  "http://localhost:5173",                 // local dev
-  "https://realeastateview.netlify.app"   // deployed frontend
+  "http://localhost:5173",
+  "https://realeastateview.netlify.app"
 ];
 
+// Apply CORS to all routes
 app.use(
   cors({
     origin: function(origin, callback) {
-      // allow requests with no origin (like Postman or mobile apps)
-      if (!origin) return callback(null, true);
+      if (!origin) return callback(null, true); // Postman, mobile apps
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -28,10 +28,18 @@ app.use(
         return callback(new Error("CORS policy: This origin is not allowed"));
       }
     },
-    methods: "GET,POST,PUT,PATCH,DELETE",
-    credentials: true, // allow cookies/auth headers
+    methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"], // include OPTIONS
+    credentials: true,
   })
 );
+
+// Handle OPTIONS preflight requests for all routes
+app.options("*", cors({
+  origin: allowedOrigins,
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  credentials: true
+}));
+
 
 
 app.use(express.json());
