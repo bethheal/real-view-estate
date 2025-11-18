@@ -11,8 +11,8 @@ router.post("/login",login)
 
 
 //Google Auth Route (Optional)
-router.post("/signup", signup);
-router.post("/login", login);
+// router.post("/signup", signup);
+// router.post("/login", login);
 
 //forgot password and reset password routes can be added here
 router.post("/forgot-password", forgotPassword);
