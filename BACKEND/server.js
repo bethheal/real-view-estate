@@ -11,23 +11,20 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-    "https://real-view-estate-frontend.onrender.com"
-
-  
+  "https://real-view-estate-frontend.onrender.com",
 ];
 
-// ✅ CORS middleware applied before routes
 app.use(
   cors({
-    origin: function(origin, callback) {
-      if (!origin) return callback(null, true); // allow Postman, mobile apps
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("CORS policy: This origin is not allowed"));
-    },
-    methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"], // include OPTIONS
-    credentials: true
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+
+// Fix preflight
+app.options("*", cors());
 
 app.use(express.json());
 app.use(passport.initialize());
