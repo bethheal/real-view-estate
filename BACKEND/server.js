@@ -50,6 +50,30 @@ if (!isLocal) {
 });
 
 }
+
+
+app.get("/api/fix-schema", async (req, res) => {
+  try {
+    await prisma.$executeRaw(`
+      CREATE TABLE IF NOT EXISTS "User" (
+          "id" SERIAL NOT NULL,
+          "name" TEXT NOT NULL,
+          "email" TEXT NOT NULL,
+          "phone" TEXT NOT NULL,
+          "password" TEXT NOT NULL,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+      );
+
+      CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
+    `);
+    res.send("✅ User table created successfully");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+});
+
 // -----------------------------------------------------------
 
 // Connect Database
