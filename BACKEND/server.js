@@ -5,37 +5,51 @@ import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import { PrismaClient } from "@prisma/client";
 import passport from "passport";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://real-view-estate-frontend.onrender.com",
-];
+// Needed for dirname in ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// ------------ CORS (LOCAL ONLY) ----------------
+const isLocal = process.env.NODE_ENV === "development";
 
-// Fix preflight
-app.options("*", cors());
+if (isLocal) {
+  console.log("🟡 Running in LOCAL mode — enabling CORS");
+  app.use(
+    cors({
+      origin: ["http://localhost:5173"],
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    })
+  );
+} else {
+  console.log("🟢 PRODUCTION mode — CORS disabled");
+}
+// ------------------------------------------------
 
+// Body parser + passport
 app.use(express.json());
 app.use(passport.initialize());
 
-// Routes
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api", dashboardRoutes);
 
-app.get("/", (req, res) => {
-  res.send("server is running");
-});
+// ------------ SERVE FRONTEND IN PRODUCTION ----------------
+if (!isLocal) {
+  const distPath = path.join(__dirname, "dist");
+  app.use(express.static(distPath));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(distPath, "index.html"));
+  });
+}
+// -----------------------------------------------------------
 
 // Connect Database
 const prisma = new PrismaClient();
@@ -53,5 +67,5 @@ connectDB();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
