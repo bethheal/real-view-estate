@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login
-  const login = async (email, password, role) => {
+  const login = async (email, password,role) => {
     const res = await api.post("/auth/login", { email, password, role: role.toUpperCase() });
     localStorage.setItem("token", res.data.token);
     setUser(res.data.user || res.data); // depends on your backend

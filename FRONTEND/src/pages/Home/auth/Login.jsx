@@ -17,7 +17,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(email, password, role.toUpperCase());
+      await login(email, password);
       toast.success("Login successful!");
       if (role === "agent") navigate("/agent-dashboard");
       else navigate("/buyer-dashboard");

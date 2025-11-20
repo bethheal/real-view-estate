@@ -35,6 +35,10 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: 'Invalid phone number format' });
     }
 
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)) {
+    return res.status(400).json({ message: "Password too weak" });
+}
+
     // Validate password match
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
@@ -77,7 +81,7 @@ export const signup = async (req, res) => {
 
 // LOGIN
 export const login = async (req, res) => {
-  const { email, password, role } = req.body; // <-- include role if you want role validation
+  const { email, password } = req.body;
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });
@@ -86,17 +90,12 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
-    // Optional: enforce login by role
-    if (role && user.role !== role.toUpperCase()) {
-      return res.status(400).json({ message: 'Invalid role for this user' });
-    }
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Generate JWT including role
+    // Generate token with stored role
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
@@ -118,3 +117,6 @@ export const login = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
+
