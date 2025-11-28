@@ -45,12 +45,16 @@ export default function SignupPage() {
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    const strength = getPasswordStrength(formData.password);
+  const backendPasswordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-    if (strength.level < 3) {
-      toast.error("Password is not strong enough.");
-      return;
-    }
+if (!backendPasswordRegex.test(formData.password)) {
+  toast.error(
+    "Password must include uppercase, lowercase, number, and special character."
+  );
+  return;
+}
+
 
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
