@@ -11,43 +11,49 @@ export const signup = async (req, res) => {
 
   try {
     // Validate all fields including role
-    if (!name || !email || !phone || !password || !confirmPassword ) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!name || !email || !phone || !password || !confirmPassword) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     // Validate role
-     const validRoles = ['BUYER', 'AGENT'];
-    const formattedRole = role?.toUpperCase() || 'BUYER';
+    const validRoles = ["BUYER", "AGENT"];
+    const formattedRole = role?.toUpperCase() || "BUYER";
 
     if (!validRoles.includes(formattedRole)) {
-      return res.status(400).json({ message: 'Role must be either BUYER or AGENT' });
+      return res
+        .status(400)
+        .json({ message: "Role must be either BUYER or AGENT" });
     }
 
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
     // Validate phone
     const phoneRegex = /^(?:\+233|0)\d{9}$/;
     if (!phoneRegex.test(phone)) {
-      return res.status(400).json({ message: 'Invalid phone number format' });
+      return res.status(400).json({ message: "Invalid phone number format" });
     }
 
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)) {
-    return res.status(400).json({ message: "Password too weak" });
-}
+    if (
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+        password
+      )
+    ) {
+      return res.status(400).json({ message: "Password too weak" });
+    }
 
     // Validate password match
     if (password !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match' });
+      return res.status(400).json({ message: "Passwords do not match" });
     }
 
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists' });
+      return res.status(400).json({ message: "Email already exists" });
     }
 
     // Hash password
@@ -60,22 +66,23 @@ export const signup = async (req, res) => {
         email,
         phone,
         password: hashPass,
-        role: role.toUpperCase(), // save role correctly
+        roles: [role.toUpperCase()], // now it’s a Role[]
       },
     });
 
     res.status(201).json({
-      message: 'User created successfully',
+      message: "User created successfully",
       userId: user.id,
       name: user.name,
       email: user.email,
       phone: user.phone,
-      role: user.role
+      role: user.role,
     });
-
   } catch (error) {
     console.log("signup error: ", error);
-    res.status(500).json({ message: 'Internal server error', details: error.message });
+    res
+      .status(500)
+      .json({ message: "Internal server error", details: error.message });
   }
 };
 
@@ -87,36 +94,32 @@ export const login = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     // Generate token with stored role
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: "1d" }
     );
 
     res.status(200).json({
-      message: 'Login successful',
+      message: "Login successful",
       token,
       userId: user.id,
       name: user.name,
       email: user.email,
       phone: user.phone,
-      role: user.role
+      role: user.role,
     });
-
   } catch (error) {
     console.log("Login error", error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
-
