@@ -23,6 +23,10 @@ app.use(cors({
 app.use(express.json());
 
 // ------------ API ROUTES ----------------
+app.get("/", (req, res) => {
+  res.send("API is running on Render!");
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api", dashboardRoutes);
 
