@@ -2,32 +2,52 @@
 import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
+
+// Layouts
 import RootLayout from "./globalComponents/RootLayout";
 import AuthLayout from "./globalComponents/AuthLayout";
+import AppSettings from "./globalComponents/settings";
 import BuyerLayout from "./layouts/BuyerLayout";
 import AgentLayout from "./layouts/AgentLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
+// Public Pages
 import Home from "./pages/Home/Home";
 import Contact from "./pages/Home/Contact";
 import Services from "./pages/Home/Services";
 import Properties from "./pages/Home/Properties";
 import FAQ from "./pages/Home/FAQ";
-import BuyerDashboard from "./pages/Buyer/Dashboard";
-import AgentDashboard from "./pages/Agent/Dashboard";
 
-// Lazy load auth pages
+// Buyer Pages
+import BuyerDashboard from "./pages/Buyer/Dashboard";
+
+// Agent Pages
+import AgentDashboard from "./pages/Agent/Dashboard";
+import AddProperty from "./pages/Agent/AddProperty";
+import ManageProperties from "./pages/Agent/ManageProperties";
+import AgentProfile from "./pages/Agent/Profile";
+
+
+// Admin Pages
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminAgents from "./pages/admin/Agents";
+import PropertyReview from "./pages/admin/PropertyReview";
+
+// Lazy Loaded Auth
 const Login = React.lazy(() => import("./pages/Home/auth/Login"));
 const SignUp = React.lazy(() => import("./pages/Home/auth/SignUp"));
 
 // Toastify
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Subscriptions from "./pages/admin/subscriptions";
 
 function App() {
   return (
     <Suspense fallback={<div className="text-center p-8">Loading...</div>}>
       <Routes>
-        {/* Public routes with RootLayout */}
+
+        {/* PUBLIC ROUTES */}
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
           <Route path="services" element={<Services />} />
@@ -36,24 +56,37 @@ function App() {
           <Route path="help-center" element={<FAQ />} />
         </Route>
 
-        {/* Auth routes (no Navbar/Footer) */}
+        {/* AUTH ROUTES */}
         <Route element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<SignUp />} />
         </Route>
 
-        {/* Buyer dashboard */}
+        {/* BUYER DASHBOARD */}
         <Route element={<BuyerLayout />}>
           <Route path="buyer-dashboard" element={<BuyerDashboard />} />
         </Route>
 
-        {/* Agent dashboard */}
+        {/* AGENT DASHBOARD */}
         <Route element={<AgentLayout />}>
           <Route path="agent-dashboard" element={<AgentDashboard />} />
+          <Route path="agent/add-property" element={<AddProperty />} />
+          <Route path="agent/manage-properties" element={<ManageProperties />} />
+          <Route path="agent/profile" element={<AgentProfile />} />
+
         </Route>
+
+        {/* ADMIN DASHBOARD */}
+        <Route element={<AdminLayout />}>
+          <Route path="admin-dashboard" element={<AdminDashboard />} />
+          <Route path="admin-subscriptions" element={<Subscriptions />} />
+          <Route path="admin-agents" element={<AdminAgents />} />
+          <Route path="admin-property-review" element={<PropertyReview />} />
+        </Route>
+
       </Routes>
 
-      {/* Global Toast Notifications */}
+      {/* TOAST NOTIFICATIONS */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
