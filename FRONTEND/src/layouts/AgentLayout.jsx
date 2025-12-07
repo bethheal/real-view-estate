@@ -50,7 +50,7 @@ export default function AgentLayout() {
         <div className="p-8 pb-4">
           <h2 className="text-2xl font-extrabold text-[#F37A2A] tracking-tight flex items-center gap-2">
             <div className="w-8 h-8 bg-[#F37A2A] rounded-lg text-white flex items-center justify-center text-lg">K</div>
-            Agent Panel
+            Real View Estate
           </h2>
         </div>
 
@@ -60,7 +60,7 @@ export default function AgentLayout() {
           {/* Main */}
           <div className="space-y-1">
             <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Overview</p>
-            <NavItem to="/agent-dashboard" icon={LayoutDashboard} label="Dashboard" />
+            <NavItem to="/agent-dashboard" icon={LayoutDashboard} label="Overview" />
           </div>
 
           {/* Properties Section */}
@@ -75,7 +75,7 @@ export default function AgentLayout() {
           <div className="space-y-1">
              <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Business</p>
             <NavItem to="/agent/leads" icon={Users} label="Leads" />
-            <NavItem to="/agent/performance" icon={BarChart2} label="Performance" />
+            {/* <NavItem to="/agent/performance" icon={BarChart2} label="Performance" /> */}
             <NavItem to="/agent/subscription" icon={CreditCard} label="Subscription" />
             <NavItem to="/agent/chats" icon={MessageSquare} label="Chats" />
           </div>
