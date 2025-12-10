@@ -6,7 +6,6 @@ import "./App.css";
 // Layouts
 import RootLayout from "./globalComponents/RootLayout";
 import AuthLayout from "./globalComponents/AuthLayout";
-import AppSettings from "./globalComponents/settings";
 import BuyerLayout from "./layouts/BuyerLayout";
 import AgentLayout from "./layouts/AgentLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -27,6 +26,7 @@ import AddProperty from "./pages/Agent/AddProperty";
 import ManageProperties from "./pages/Agent/ManageProperties";
 import AgentProfile from "./pages/Agent/Profile";
 import AgentsDraft from "./pages/Agent/AgentsDraft";
+// import AppSettings from "./globalComponents/settings";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -44,6 +44,7 @@ import Subscriptions from "./pages/admin/subscriptions";
 import PropertyLeadsDetail from "./pages/Agent/PropertyLeadsDetail";
 import SubscriptionPlans from "./pages/Agent/subscription";
 import AgentChatInbox from "./pages/Agent/chats";
+import AppSettings from "./globalComponents/settings";
 
 function App() {
   return (
@@ -80,13 +81,10 @@ function App() {
           <Route path="agent/profile" element={<AgentProfile />} />
           <Route path="agent/drafts" element={<AgentsDraft />} />
           <Route path="agent/subscription" element={<SubscriptionPlans />} />
-                    <Route path="agent/chats" element={<AgentChatInbox />} />
+          <Route path="agent/chats" element={<AgentChatInbox />} />
 
-
-          <Route
-            path="/agent/leads"
-            element={<PropertyLeadsDetail />}
-          />
+          <Route path="/agent/leads" element={<PropertyLeadsDetail />} />
+          <Route path="/agent/settings" element={<AppSettings />} />
         </Route>
 
         {/* ADMIN DASHBOARD */}

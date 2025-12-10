@@ -167,6 +167,8 @@ export default function AppSettings() {
                 onChange={handleInputChange}
                 className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded-lg block p-3 outline-none"
               >
+                                <option value="GHS">(GHS)</option>
+
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>

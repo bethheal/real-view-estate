@@ -61,10 +61,10 @@ export default function AgentLayout() {
       {/* SIDEBAR */}
       <aside 
         className={`
-          fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          lg:translate-x-0 lg:static lg:h-screen lg:shadow-none lg:border-r lg:border-gray-100
-        `}
+      fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out
+      ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+      lg:translate-x-0 lg:h-screen lg:shadow-none lg:border-r lg:border-gray-100
+    `}
       >
         
         {/* Logo Section */}
@@ -126,10 +126,10 @@ export default function AgentLayout() {
 
       {/* MAIN CONTENT AREA */}
       {/* Changed ml-72 to flex-1 and used logic to handle width */}
-      <main className="flex-1 min-w-0 overflow-auto">
+  <main className="flex-1 ml-0 lg:ml-72 flex flex-col min-h-screen overflow-auto">
         
         {/* HEADER */}
-        <header className="sticky top-0 z-20 bg-[#FAEEDC]/95 backdrop-blur-sm px-4 md:px-8 py-4 md:py-8 flex justify-between items-center">
+    <header className="sticky top-0 z-20 bg-[#FAEEDC]/95 backdrop-blur-sm px-4 md:px-8 py-4 md:py-8 flex justify-between items-center">
           
           <div className="flex items-center gap-4">
             {/* Hamburger Menu (Mobile Only) */}
@@ -156,7 +156,7 @@ export default function AgentLayout() {
         </header>
 
         {/* PAGE CONTENT */}
-        <div className="px-4 md:px-8 pb-8 min-h-[80vh]">
+    <div className="flex-1 px-4 md:px-8 pb-8 overflow-auto">
           <Outlet />
         </div>
       </main>

@@ -12,7 +12,7 @@ const app = express();
 // ------------ CORS CONFIG (Local Only) ----------------
 
 app.use(cors({
-  origin: ["http://localhost:5173", "https://real-view-estate.onrender.com"],
+  origin: ["http://localhost:5174", "https://real-view-estate.onrender.com"],
   credentials: true
 }));
 
