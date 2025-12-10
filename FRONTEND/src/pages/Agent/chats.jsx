@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, MessageSquare, Send, Search, Bell, X, Phone, Home, MessageSquareText, Zap } from 'lucide-react';
-// Note: Tailwind doesn't have a WhatsApp icon by default, so we'll use a placeholder or style a standard icon.
-// For this example, we'll use a simple button style to represent WhatsApp.
+import { User, MessageSquare, Send, Search, Bell, X, Phone, Home, MessageSquareText, Zap, ChevronLeft } from 'lucide-react';
+// Note: Using ChevronLeft for the mobile back button
 
-// --- DUMMY DATA (No change needed, but included for completeness) ---
+// --- DUMMY DATA ---
 const DUMMY_CONVERSATIONS = [
     {
         id: 'convo-1',
@@ -49,13 +48,10 @@ const DUMMY_MESSAGES = [
 
 // --- WHATSAPP UTILITY FUNCTION ---
 const getWhatsAppLink = (phoneNumber, propertyTitle) => {
-    // Assuming numbers are provided without the international code (+233) but will be prepended here.
-    // Replace non-numeric characters.
     const cleanNumber = phoneNumber.replace(/\D/g, '');
     const ghanaCode = '233'; 
 
-    // Prepend '233' if it's a 9-digit number (common Ghanaian format without leading 0)
-    // Adjust this logic based on how your phone numbers are stored.
+    // Adjust logic to correctly handle number formats
     const fullNumber = cleanNumber.length === 9 ? ghanaCode + cleanNumber : cleanNumber;
 
     const message = `Hello, I am the agent for the property: ${propertyTitle}. I'm following up on your inquiry.`;
@@ -120,8 +116,8 @@ export default function AgentChatInbox() {
     return (
         <div className="max-w-7xl mx-auto p-0 h-[80vh] min-h-[600px] flex rounded-xl shadow-2xl overflow-hidden border border-gray-100 bg-white">
             
-            {/* 1. Conversation Sidebar (Left Pane) */}
-            <div className="w-full md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col">
+            {/* 1. Conversation Sidebar (Left Pane) - Hidden when a convo is selected on mobile */}
+            <div className={`w-full md:w-80 bg-gray-50 border-r border-gray-200 flex flex-col ${selectedConvo && 'hidden md:flex'}`}>
                 <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-white">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                         <MessageSquareText size={24} className="text-[#F37A2A]" /> 
@@ -130,7 +126,7 @@ export default function AgentChatInbox() {
                     <Bell size={20} className="text-gray-600 hover:text-[#F37A2A] cursor-pointer" />
                 </div>
                 
-                {/* Search Bar Placeholder */}
+                {/* Search Bar */}
                 <div className="p-4">
                      <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -150,17 +146,19 @@ export default function AgentChatInbox() {
                             className={`p-4 border-b border-gray-200 cursor-pointer transition duration-150 flex items-start hover:bg-gray-100 ${
                                 selectedConvo?.id === convo.id ? 'bg-white border-l-4 border-[#F37A2A] shadow-inner' : ''
                             }`}
+                            onClick={() => selectConversation(convo)}
                         >
-                            <div 
-                                onClick={(e) => { 
-                                    e.stopPropagation(); // Prevents selecting the convo when clicking the link
-                                    convo.phone && window.open(getWhatsAppLink(convo.phone, convo.propertyTitle), '_blank');
-                                }}
-                                className="relative mr-3"
-                            >
-                                {/* WhatsApp/Contact Icon */}
-                                <span title="Chat on WhatsApp" className="absolute -top-1 -left-1 bg-green-500 text-white p-1 rounded-full opacity-90 hover:opacity-100 transition">
-                                    <Phone size={12} /> {/* Using Phone as a stand-in for WhatsApp icon */}
+                            <div className="relative mr-3">
+                                {/* WhatsApp/Contact Icon - Click action moved to the icon itself */}
+                                <span 
+                                    title="Chat on WhatsApp" 
+                                    className="absolute -top-1 -left-1 bg-green-500 text-white p-1 rounded-full opacity-90 hover:opacity-100 transition"
+                                    onClick={(e) => { 
+                                        e.stopPropagation(); // Prevents selecting the convo
+                                        convo.phone && window.open(getWhatsAppLink(convo.phone, convo.propertyTitle), '_blank');
+                                    }}
+                                >
+                                    <Phone size={12} />
                                 </span>
                                 
                                 <User size={40} className="text-gray-400 bg-gray-200 p-2 rounded-full" />
@@ -171,7 +169,7 @@ export default function AgentChatInbox() {
                                 )}
                             </div>
                             
-                            <div className="flex-1 min-w-0" onClick={() => selectConversation(convo)}>
+                            <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-center mb-1">
                                     <h3 className="font-semibold text-gray-900 truncate">{convo.leadName}</h3>
                                     <span className="text-xs text-gray-400">{convo.timestamp}</span>
@@ -186,26 +184,38 @@ export default function AgentChatInbox() {
                 </div>
             </div>
 
-            {/* 2. Chat Window (Right Pane) */}
-            <div className="flex-1 flex flex-col">
+            {/* 2. Chat Window (Right Pane) - Takes full width on mobile when selected */}
+            <div className={`flex-1 flex-col ${selectedConvo ? 'flex' : 'hidden md:flex'}`}>
                 {selectedConvo ? (
                     <>
                         {/* Chat Header */}
                         <div className="p-4 border-b border-gray-200 bg-white shadow-sm flex justify-between items-center">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-800">{selectedConvo.leadName}</h3>
-                                <p className="text-sm text-gray-500 flex items-center gap-1">
-                                    <Home size={14} className="text-[#F37A2A]" /> {selectedConvo.propertyTitle}
-                                </p>
+                            <div className="flex items-center">
+                                {/* Back Button for Mobile */}
+                                <button 
+                                    onClick={() => setSelectedConvo(null)} 
+                                    className="p-2 mr-2 text-gray-600 hover:bg-gray-100 rounded-full transition md:hidden" 
+                                    title="Back to Inbox"
+                                >
+                                    <ChevronLeft size={20} />
+                                </button>
+
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800">{selectedConvo.leadName}</h3>
+                                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                                        <Home size={14} className="text-[#F37A2A]" /> {selectedConvo.propertyTitle}
+                                    </p>
+                                </div>
                             </div>
+                            
                             <div className="flex gap-3">
                                 
-                                {/* 📞 Direct Call Button (Existing) */}
+                                {/* 📞 Direct Call Button */}
                                 <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition" title="Call Lead">
                                     <Phone size={20} />
                                 </button>
                                 
-                                {/* 🟢 WhatsApp Button (NEW) */}
+                                {/* 🟢 WhatsApp Button */}
                                 {selectedConvo.phone && (
                                     <a
                                         href={getWhatsAppLink(selectedConvo.phone, selectedConvo.propertyTitle)}
@@ -214,25 +224,29 @@ export default function AgentChatInbox() {
                                         className="p-2 bg-green-500 text-white hover:bg-green-600 rounded-full transition shadow-md flex items-center"
                                         title="Start WhatsApp Chat"
                                     >
-                                        <Zap size={20} /> {/* Using Zap as a stand-in for a stylish icon */}
+                                        <Zap size={20} />
                                     </a>
                                 )}
                                 
-                                {/* Close Chat */}
-                                <button className="p-2 text-red-500 hover:bg-red-50 rounded-full transition" title="Close Chat">
+                                {/* Close Chat (Only on Desktop, mobile uses back button) */}
+                                <button 
+                                    onClick={() => setSelectedConvo(null)}
+                                    className="p-2 text-red-500 hover:bg-red-50 rounded-full transition hidden md:block" 
+                                    title="Close Chat"
+                                >
                                     <X size={20} />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Message Area (No changes here) */}
-                        <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50">
+                        {/* Message Area */}
+                        <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 bg-gray-50">
                             {loading ? (
                                 <p className="text-center text-gray-500">Loading messages...</p>
                             ) : (
                                 messages.map((msg) => (
                                     <div key={msg.id} className={`flex ${msg.sender === 'agent' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-xs md:max-w-md p-3 rounded-xl shadow-md ${
+                                        <div className={`max-w-[80%] sm:max-w-xs md:max-w-md p-3 rounded-xl shadow-md ${
                                             msg.sender === 'agent' 
                                                 ? 'bg-[#F37A2A] text-white rounded-br-none' 
                                                 : 'bg-white text-gray-800 rounded-tl-none border border-gray-200'
@@ -245,10 +259,10 @@ export default function AgentChatInbox() {
                                     </div>
                                 ))
                             )}
-                             <div ref={messagesEndRef} />
+                            <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Input Area (No changes here) */}
+                        {/* Input Area */}
                         <form onSubmit={handleSend} className="p-4 border-t border-gray-200 bg-white flex gap-3">
                             <input
                                 type="text"
@@ -268,7 +282,7 @@ export default function AgentChatInbox() {
                         </form>
                     </>
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <div className="flex flex-col items-center justify-center h-full text-gray-500 hidden md:flex">
                         <MessageSquare size={80} className="mb-4" />
                         <p className="text-lg font-medium">Select a conversation to start chatting.</p>
                         <p className="text-sm">New leads will appear in the left sidebar.</p>

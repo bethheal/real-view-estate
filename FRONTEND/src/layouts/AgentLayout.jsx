@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import { useAuth } from "../pages/Home/auth/AuthProvider";
 import { 
@@ -12,22 +12,28 @@ import {
   MessageSquare, 
   User, 
   Settings, 
-  LogOut 
+  LogOut,
+  Menu, // Added Menu icon for mobile toggle
+  X     // Added X icon to close mobile menu
 } from "lucide-react";
 
 export default function AgentLayout() {
   const { user, logout } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
-  // Extract the first name for the greeting. Use 'Agent' as fallback.
   const userFirstName = user?.firstName || "Agent";
-  
-  // Extract the first letter for the avatar placeholder.
   const avatarLetter = userFirstName.charAt(0).toUpperCase();
 
-  // Helper to keep the nav logic clean while applying the new style
+  // Helper to toggle sidebar
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  
+  // Close sidebar when clicking a link (mobile UX)
+  const closeSidebar = () => setIsSidebarOpen(false);
+
   const NavItem = ({ to, icon: Icon, label }) => (
     <NavLink
       to={to}
+      onClick={closeSidebar} // Close menu on selection for mobile
       className={({ isActive }) =>
         `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm ${
           isActive
@@ -43,15 +49,34 @@ export default function AgentLayout() {
 
   return (
     <div className="flex min-h-screen bg-[#FAEEDC]">
-      {/* Sidebar - Styled like the image (White, Shadow, Clean) */}
-      <aside className="w-72 bg-white shadow-2xl flex flex-col fixed h-full z-20">
+      
+      {/* MOBILE OVERLAY: Visible only when sidebar is open on small screens */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
+      {/* SIDEBAR */}
+      <aside 
+        className={`
+          fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+          lg:translate-x-0 lg:static lg:h-screen lg:shadow-none lg:border-r lg:border-gray-100
+        `}
+      >
         
         {/* Logo Section */}
-        <div className="p-8 pb-4">
-          <h2 className="text-2xl font-extrabold text-[#F37A2A] tracking-tight flex items-center gap-2">
+        <div className="p-6 md:p-8 pb-4 flex justify-between items-center">
+          <h2 className="text-xl md:text-2xl font-extrabold text-[#F37A2A] tracking-tight flex items-center gap-2">
             <div className="w-8 h-8 bg-[#F37A2A] rounded-lg text-white flex items-center justify-center text-lg">K</div>
-            Real View Estate
+            Real View
           </h2>
+          {/* Close Button (Mobile Only) */}
+          <button onClick={closeSidebar} className="lg:hidden text-gray-500 hover:text-red-500">
+            <X size={24} />
+          </button>
         </div>
 
         {/* Navigation */}
@@ -75,7 +100,6 @@ export default function AgentLayout() {
           <div className="space-y-1">
              <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Business</p>
             <NavItem to="/agent/leads" icon={Users} label="Leads" />
-            {/* <NavItem to="/agent/performance" icon={BarChart2} label="Performance" /> */}
             <NavItem to="/agent/subscription" icon={CreditCard} label="Subscription" />
             <NavItem to="/agent/chats" icon={MessageSquare} label="Chats" />
           </div>
@@ -100,27 +124,39 @@ export default function AgentLayout() {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 ml-72 p-8">
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            {/* Displaying the user's first name */}
-            <h1 className="text-2xl font-bold text-gray-800">
-              Welcome, <span className="text-[#F37A2A]">{userFirstName}</span>
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">Here is an overview of your property stats today.</p>
+      {/* MAIN CONTENT AREA */}
+      {/* Changed ml-72 to flex-1 and used logic to handle width */}
+      <main className="flex-1 min-w-0 overflow-auto">
+        
+        {/* HEADER */}
+        <header className="sticky top-0 z-20 bg-[#FAEEDC]/95 backdrop-blur-sm px-4 md:px-8 py-4 md:py-8 flex justify-between items-center">
+          
+          <div className="flex items-center gap-4">
+            {/* Hamburger Menu (Mobile Only) */}
+            <button 
+              onClick={toggleSidebar} 
+              className="lg:hidden p-2 -ml-2 text-gray-700 hover:bg-orange-100 rounded-lg transition-colors"
+            >
+              <Menu size={24} />
+            </button>
+
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+                Welcome, <span className="text-[#F37A2A]">{userFirstName}</span>
+              </h1>
+              <p className="hidden md:block text-gray-500 text-sm mt-1">Here is an overview of your property stats today.</p>
+            </div>
           </div>
           
           <div className="flex gap-3">
-            {/* Avatar Placeholder: Uses the first letter of the name */}
              <div className="w-10 h-10 bg-[#F37A2A] rounded-full shadow-md flex items-center justify-center text-white font-bold text-lg border-2 border-white ring-2 ring-orange-400">
                 {avatarLetter}
              </div>
           </div>
         </header>
 
-        {/* Content Container */}
-        <div className="min-h-[80vh]">
+        {/* PAGE CONTENT */}
+        <div className="px-4 md:px-8 pb-8 min-h-[80vh]">
           <Outlet />
         </div>
       </main>

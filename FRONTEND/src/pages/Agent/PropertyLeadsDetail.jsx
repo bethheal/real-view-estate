@@ -141,7 +141,7 @@ export default function PropertyLeadsDetail() {
                                     <h2 className="text-xl font-bold text-gray-800">{lead.name}</h2>
                                     <p className="text-sm text-gray-500">Inquired on: {new Date(lead.inquiryDate).toLocaleDateString()}</p>
                                 </div>
-                                <span className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadgeColor(lead.status)}`}>
+                                <span className={`flex-shrink-0 px-3 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadgeColor(lead.status)}`}>
                                     {lead.status}
                                 </span>
                             </div>
@@ -160,25 +160,25 @@ export default function PropertyLeadsDetail() {
                                 <p className="text-gray-600 italic">"{lead.message}"</p>
                             </div>
 
-                            {/* Action Buttons: Status Updates */}
-                            <div className="flex gap-3 pt-3 border-t">
+                            {/* Action Buttons: Status Updates - Enhanced Responsiveness */}
+                            <div className="flex flex-wrap gap-3 pt-3 border-t">
                                 <button
                                     onClick={() => updateLeadStatus(lead._id, 'Contacted')}
                                     disabled={lead.status === 'Contacted' || lead.status === 'Qualified'}
-                                    className="px-4 py-2 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:bg-gray-400 transition"
+                                    className="flex-grow sm:flex-grow-0 px-4 py-2 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:bg-gray-400 transition"
                                 >
                                     Mark as Contacted
                                 </button>
                                 <button
                                     onClick={() => updateLeadStatus(lead._id, 'Qualified')}
                                     disabled={lead.status === 'Qualified'}
-                                    className="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
+                                    className="flex-grow sm:flex-grow-0 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
                                 >
                                     Mark as Qualified
                                 </button>
                                 <button
                                     onClick={() => updateLeadStatus(lead._id, 'Lost')}
-                                    className="px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
+                                    className="flex-grow sm:flex-grow-0 px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
                                 >
                                     Mark as Lost
                                 </button>
