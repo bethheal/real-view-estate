@@ -5,17 +5,21 @@ import "./index.css";
 import App from "./App.jsx";
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { AuthProvider } from "./pages/Home/auth/AuthProvider.jsx";
-import { BrowserRouter } from "react-router";
+import { BrowserRouter } from "react-router-dom"; // Use 'react-router-dom' for BrowserRouter
+import { GlobalSettingsProvider } from "./globalComponents/useGlobalSettings.jsx";
+
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ThemeProvider>
       <BrowserRouter>
-    <AuthProvider>  
-          <App />
-
-      </AuthProvider>
+       
+        <GlobalSettingsProvider> 
+          <AuthProvider> 
+            <App />
+          </AuthProvider>
+        </GlobalSettingsProvider>
       </BrowserRouter>
-      </ThemeProvider>
+    </ThemeProvider>
   </StrictMode>
 );

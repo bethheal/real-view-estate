@@ -1,5 +1,5 @@
 // App.jsx
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
 
@@ -19,6 +19,7 @@ import FAQ from "./pages/Home/FAQ";
 
 // Buyer Pages
 import BuyerDashboard from "./pages/Buyer/Dashboard";
+
 
 // Agent Pages
 import AgentDashboard from "./pages/Agent/Dashboard";
@@ -45,8 +46,14 @@ import PropertyLeadsDetail from "./pages/Agent/PropertyLeadsDetail";
 import SubscriptionPlans from "./pages/Agent/subscription";
 import AgentChatInbox from "./pages/Agent/chats";
 import AppSettings from "./globalComponents/settings";
+import BrowseProperties from "./pages/Buyer/BrowseProperties";
+import SavedProperties from "./pages/Buyer/SavedProperties";
+import BuyerChatInbox from "./pages/Buyer/messages";
+import BuyerProfile from "./pages/Buyer/Profile";
 
 function App() {
+        const [savedProperties, setSavedProperties] = useState([]);
+
   return (
     <Suspense fallback={<div className="text-center p-8">Loading...</div>}>
       <Routes>
@@ -68,6 +75,11 @@ function App() {
         {/* BUYER DASHBOARD */}
         <Route element={<BuyerLayout />}>
           <Route path="buyer-dashboard" element={<BuyerDashboard />} />
+          <Route path="buyer/browse" element={<BrowseProperties  savedProperties={savedProperties} setSavedProperties={setSavedProperties}/>} />
+           <Route path="buyer/saved" element={<SavedProperties savedProperties={savedProperties} />} /> 
+          <Route path="buyer/messages" element={<BuyerChatInbox />} />
+          <Route path="buyer/profile" element={<BuyerProfile />}/>
+          {/* <Route path="buyer/settings" element={<div>Settings</div>} />  */}
         </Route>
 
         {/* AGENT DASHBOARD */}
