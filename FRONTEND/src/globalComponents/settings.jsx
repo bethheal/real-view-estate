@@ -1,18 +1,33 @@
+import React, { useState, useEffect } from "react";
+import { api } from "../config/axios";
 import { toast } from "react-toastify";
+// Import all necessary icons
 import { Bell, Globe, DollarSign, Clock, VolumeX, Mail, Moon, Sun, Ruler, Trash2, Download } from "lucide-react"; 
 
 // Assume the hook is correctly located here
 import { useTheme } from "../hooks/useTheme"; 
-import { useGlobalSettings } from "./useGlobalSettings";
-
-// import { useGlobalSettings } from "../hooks/useGlobalSettings"; // Adjust path as necessary
 
 export default function AppSettings() {
-  // 1. Connect to Global State and Handlers
-  const { settings, loading, updateLocalSettings, saveSettings } = useGlobalSettings();
+  
   const { theme, toggleTheme } = useTheme();
 
-  // --- Data & Options (These can remain local as they are constants) ---
+  // --- State ---
+  const [settings, setSettings] = useState({
+    // Notification Preferences
+    emailNotifications: true,
+    inAppNotifications: true,
+    dnd: false, 
+
+    // General Preferences
+    currency: "USD",
+    timezone: "GMT-5", 
+    language: "en",
+    units: "Imperial" // Added unit of measurement
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  // --- Data & Options ---
   const timezoneOptions = [
     { value: "GMT-5", label: "Eastern Time (GMT-5)" },
     { value: "GMT-8", label: "Pacific Time (GMT-8)" },
@@ -20,39 +35,58 @@ export default function AppSettings() {
     { value: "GMT+5", label: "Indian Standard Time (GMT+5:30)" },
   ];
 
-  // --- Refactored Handlers ---
+  // --- Effects & Handlers ---
   
-  // 2. Simplifies handling for standard inputs (select, text)
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      // Use a common endpoint for both Agent and Buyer settings
+      const res = await api.get("/user/settings");
+      setSettings(res.data);
+    } catch (err) {
+      toast.warn("Could not load custom settings. Using defaults.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    updateLocalSettings(name, value); // Calls global state update
+    setSettings((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 3. Simplifies handling for checkboxes
   const handleToggleChange = (e) => {
     const { name, checked } = e.target;
-    updateLocalSettings(name, checked); // Calls global state update
+    setSettings((prev) => ({ ...prev, [name]: checked }));
   };
 
-  // 4. Simplifies submission to use the centralized API save function
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await saveSettings(settings); // Calls global API save
+    try {
+      await api.put("/user/settings", settings);
+      toast.success("Settings updated successfully!");
+    } catch (err) {
+      toast.error("Failed to save settings. Please try again.");
+    }
   };
   
-  // Handlers for specific actions (remain local as they don't affect global settings state)
+  // Handlers for specific actions
   const handleDataExport = () => {
+    // In a real app, this would call an API endpoint: POST /user/export-data
     toast.info("Data export initiated. You will receive an email shortly.");
   };
 
   const handleDeleteAccount = () => {
     if (window.confirm("Are you sure you want to permanently delete your account? This action cannot be undone.")) {
+      // In a real app, this would call an API endpoint: DELETE /user/account
       toast.error("Account deletion process started.");
     }
   };
 
 
-  // Loading state comes from the global hook
   if (loading)
     return (
       <div className="flex justify-center items-center h-64 text-gray-500">
@@ -72,7 +106,7 @@ export default function AppSettings() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* Dark/Light Mode Toggle (No changes needed, uses local useTheme hook) */}
+            {/* Dark/Light Mode Toggle */}
             <div className="col-span-1">
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
                     Theme Preference
@@ -93,20 +127,20 @@ export default function AppSettings() {
                     </div>
                     <div className="relative w-1/2 text-center py-1 font-medium text-sm z-10">
                          <span className={`transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-500 dark:text-gray-300'}`}>
-                             <Moon size={16} className="inline mr-2" /> Dark
-                         </span>
+                            <Moon size={16} className="inline mr-2" /> Dark
+                        </span>
                     </div>
                 </div>
             </div>
             
-            {/* Language (Uses global state and handler) */}
+            {/* Language */}
             <div className="col-span-1">
               <label htmlFor="language" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2"><Globe size={16} /> Language</label>
               <select
                 id="language"
                 name="language"
-                value={settings.language} // Reads from global state
-                onChange={handleInputChange} // Calls global update
+                value={settings.language}
+                onChange={handleInputChange}
                 className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded-lg block p-3 outline-none"
               >
                 <option value="en">English (US)</option>
@@ -117,7 +151,7 @@ export default function AppSettings() {
           </div>
         </div>
 
-        {/* --- SECTION 2: Regional & Data Preferences (Uses global state and handler) --- */}
+        {/* --- SECTION 2: Regional & Data Preferences --- */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-3"><Globe size={20} className="text-purple-600" /> Regional Settings</h2>
           
@@ -129,11 +163,12 @@ export default function AppSettings() {
               <select
                 id="currency"
                 name="currency"
-                value={settings.currency} // Reads from global state
-                onChange={handleInputChange} // Calls global update
+                value={settings.currency}
+                onChange={handleInputChange}
                 className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded-lg block p-3 outline-none"
               >
-                                 <option value="GHS">(GHS)</option>
+                                <option value="GHS">(GHS)</option>
+
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>
@@ -146,8 +181,8 @@ export default function AppSettings() {
               <select
                 id="timezone"
                 name="timezone"
-                value={settings.timezone} // Reads from global state
-                onChange={handleInputChange} // Calls global update
+                value={settings.timezone}
+                onChange={handleInputChange}
                 className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded-lg block p-3 outline-none"
               >
                 {timezoneOptions.map(tz => <option key={tz.value} value={tz.value}>{tz.label}</option>)}
@@ -160,8 +195,8 @@ export default function AppSettings() {
               <select
                 id="units"
                 name="units"
-                value={settings.units} // Reads from global state
-                onChange={handleInputChange} // Calls global update
+                value={settings.units}
+                onChange={handleInputChange}
                 className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm rounded-lg block p-3 outline-none"
               >
                 <option value="Imperial">Imperial (sq. ft.)</option>
@@ -171,7 +206,7 @@ export default function AppSettings() {
           </div>
         </div>
 
-        {/* --- SECTION 3: Notification Preferences (Uses global state and handler) --- */}
+        {/* --- SECTION 3: Notification Preferences --- */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-3"><Bell size={20} className="text-purple-600" /> Notification Preferences</h2>
           <p className="text-gray-500 text-sm mb-6">Control how and when you receive alerts about new activity.</p>
@@ -189,8 +224,8 @@ export default function AppSettings() {
                 type="checkbox"
                 name="emailNotifications"
                 id="emailNotifications"
-                checked={settings.emailNotifications} // Reads from global state
-                onChange={handleToggleChange} // Calls global update
+                checked={settings.emailNotifications}
+                onChange={handleToggleChange}
                 className="relative w-10 h-6 transition-colors bg-gray-200 rounded-full appearance-none cursor-pointer dark:bg-gray-600 checked:bg-purple-600"
               />
             </div>
@@ -206,8 +241,8 @@ export default function AppSettings() {
                 type="checkbox"
                 name="inAppNotifications"
                 id="inAppNotifications"
-                checked={settings.inAppNotifications} // Reads from global state
-                onChange={handleToggleChange} // Calls global update
+                checked={settings.inAppNotifications}
+                onChange={handleToggleChange}
                 className="relative w-10 h-6 transition-colors bg-gray-200 rounded-full appearance-none cursor-pointer dark:bg-gray-600 checked:bg-purple-600"
               />
             </div>
@@ -223,15 +258,15 @@ export default function AppSettings() {
                 type="checkbox"
                 name="dnd"
                 id="dnd"
-                checked={settings.dnd} // Reads from global state
-                onChange={handleToggleChange} // Calls global update
+                checked={settings.dnd}
+                onChange={handleToggleChange}
                 className="relative w-10 h-6 transition-colors bg-gray-200 rounded-full appearance-none cursor-pointer dark:bg-gray-600 checked:bg-red-500"
               />
             </div>
           </div>
         </div>
 
-        {/* --- SECTION 4: Data Management (Remains local) --- */}
+        {/* --- SECTION 4: Data Management --- */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-3"><Download size={20} className="text-purple-600" /> Account & Data</h2>
           <p className="text-gray-500 text-sm mb-6">Manage your data and account life cycle.</p>
@@ -270,7 +305,7 @@ export default function AppSettings() {
           </div>
         </div>
         
-        {/* --- SUBMIT ACTIONS --- */}
+        {/* --- SUBMIT ACTIONS (Applies to Sections 1-3 changes) --- */}
         <div className="flex justify-end pt-6">
           <button 
             type="submit"
