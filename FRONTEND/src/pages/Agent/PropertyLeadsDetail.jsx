@@ -2,191 +2,102 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from "../../config/axios";
 import { toast } from "react-toastify";
+import { MessageCircle, Phone, Mail, ArrowLeft } from 'lucide-react'; // Optional icons
 
-// --- DUMMY DATA (Simulates leads fetched from the backend for a property) ---
-const DUMMY_LEADS_DATA = [
-    {
-        _id: "lead-a1",
-        name: "Akua Mensah",
-        email: "akua.m@example.com",
-        phone: "+233 24 555 1234",
-        message: "I am very interested in this property and would like to schedule a viewing early next week.",
-        status: "New", // New, Contacted, Qualified, Lost
-        inquiryDate: "2025-12-05T10:00:00Z",
-    },
-    {
-        _id: "lead-a2",
-        name: "Kofi Boateng",
-        email: "kofi.b@test.com",
-        phone: "+233 50 111 2222",
-        message: "Can you confirm the total monthly rent/mortgage payment, please?",
-        status: "Contacted",
-        inquiryDate: "2025-12-04T15:30:00Z",
-    },
-    {
-        _id: "lead-a3",
-        name: "Ama Owusu",
-        email: "ama.o@web.net",
-        phone: null,
-        message: "I need to know the proximity to international schools. Serious buyer.",
-        status: "New",
-        inquiryDate: "2025-12-04T09:15:00Z",
-    },
-];
-// --- END DUMMY DATA ---
-
-// --- Helper Function ---
 const getStatusBadgeColor = (status) => {
     switch (status) {
-        case "New":
-            return "bg-blue-100 text-blue-800";
-        case "Contacted":
-            return "bg-yellow-100 text-yellow-800";
-        case "Qualified":
-            return "bg-green-100 text-green-800";
-        case "Lost":
-            return "bg-red-100 text-red-800";
-        default:
-            return "bg-gray-100 text-gray-800";
+        case "NEW": return "bg-blue-100 text-blue-800";
+        case "CONTACTED": return "bg-yellow-100 text-yellow-800";
+        case "QUALIFIED": return "bg-green-100 text-green-800";
+        case "LOST": return "bg-red-100 text-red-800";
+        default: return "bg-gray-100 text-gray-800";
     }
 };
 
 export default function PropertyLeadsDetail() {
-    // Get the propertyId from the URL (e.g., from /agent/leads/prop-live-1)
     const { propertyId } = useParams();
-    
     const [leads, setLeads] = useState([]);
-    const [propertyTitle, setPropertyTitle] = useState("Loading Property...");
+    const [propertyTitle, setPropertyTitle] = useState("Loading...");
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
-    // Function to fetch the leads for the specific property
     const fetchPropertyLeads = async () => {
         try {
-            // 1. Simulate fetching the property details to get the title
-            // In a real app: const propertyRes = await api.get(`/property/${propertyId}`);
-            // setPropertyTitle(propertyRes.data.title);
-            
-            // DUMMY: Set a placeholder title
-            setPropertyTitle(`Property ID: ${propertyId.substring(0, 10)}...`);
-
-            // 2. Fetch the leads
-            // In a real app: const leadsRes = await api.get(`/agent/leads/${propertyId}`);
-            // setLeads(leadsRes.data);
-            
-            // DUMMY: Use dummy data
-            setTimeout(() => {
-                setLeads(DUMMY_LEADS_DATA);
-                setLoading(false);
-            }, 500);
-
+            // Real API call to your Prisma backend
+            const res = await api.get(`/agent/properties/${propertyId}/leads`);
+            setLeads(res.data.leads);
+            setPropertyTitle(res.data.title);
+            setLoading(false);
         } catch (err) {
-            toast.error("Failed to load leads or property details.");
-            setError("Could not retrieve leads from the server.");
+            toast.error("Failed to load leads.");
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchPropertyLeads();
-    }, [propertyId]); // Re-run if the propertyId changes
+    useEffect(() => { fetchPropertyLeads(); }, [propertyId]);
 
-    // --- Action Handlers ---
-
-    // Function to update lead status (e.g., from New to Contacted)
     const updateLeadStatus = async (leadId, newStatus) => {
-        // In a real app: await api.patch(`/agent/lead/${leadId}`, { status: newStatus });
-        
-        // DUMMY update:
-        setLeads(prevLeads => prevLeads.map(lead => 
-            lead._id === leadId ? { ...lead, status: newStatus } : lead
-        ));
-        toast.success(`Lead ${leadId} status updated to ${newStatus}`);
+        try {
+            await api.patch(`/leads/${leadId}/status`, { status: newStatus });
+            setLeads(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+            toast.success("Status updated");
+        } catch (err) {
+            toast.error("Update failed");
+        }
     };
 
-    if (loading) {
-        return <p className="text-center p-12 text-gray-600">Loading leads for property...</p>;
-    }
-    
-    if (error) {
-        return <p className="text-center p-12 text-red-600 bg-red-50 border border-red-300 rounded-lg">{error}</p>;
-    }
-    
-    // --- Render Component ---
+    // Helper to open WhatsApp
+    const openWhatsApp = (phone, name, property) => {
+        const cleanPhone = phone.replace(/\D/g, ''); // Removes spaces and +
+        const message = `Hello ${name}, I am the agent for ${property}. I saw your inquiry!`;
+        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
+    if (loading) return <div className="p-20 text-center">Loading leads...</div>;
 
     return (
-        <div className="max-w-7xl mx-auto p-4 md:p-8">
-            <header className="mb-8 border-b pb-4">
-                {/* Link back to the main property management page */}
-                <Link to="/agent/my-properties" className="text-sm text-blue-600 hover:underline mb-2 block">
-                    &larr; Back to Manage Listings
+        <div className="max-w-6xl mx-auto p-6">
+            <header className="mb-8">
+                <Link to="/agent/dashboard" className="flex items-center text-blue-600 gap-2 mb-4 hover:underline">
+                    <ArrowLeft size={16} /> Back to Dashboard
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-800">
-                    📞 Leads for: <span className="text-[#F37A2A]">{propertyTitle}</span>
-                </h1>
-                <p className="text-gray-500 mt-1">Total Inquiries: **{leads.length}**</p>
+                <h1 className="text-3xl font-bold">Leads: <span className="text-[#F37A2A]">{propertyTitle}</span></h1>
             </header>
-            
-            {leads.length === 0 ? (
-                <div className="text-center p-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                    <h2 className="text-xl font-semibold text-gray-700 mb-2">No Inquiries Yet</h2>
-                    <p className="text-gray-500">No leads have been recorded for this property.</p>
-                </div>
-            ) : (
-                <div className="space-y-6">
-                    {leads.map((lead) => (
-                        <div key={lead._id} className="bg-white border border-gray-200 rounded-xl shadow-md p-6">
-                            <div className="flex justify-between items-start mb-4 border-b pb-3">
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-800">{lead.name}</h2>
-                                    <p className="text-sm text-gray-500">Inquired on: {new Date(lead.inquiryDate).toLocaleDateString()}</p>
+
+            <div className="space-y-4">
+                {leads.map((lead) => (
+                    <div key={lead.id} className="bg-white border rounded-xl p-6 shadow-sm hover:shadow-md transition">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-800">{lead.buyerName}</h2>
+                                <p className="text-sm text-gray-500 italic mb-3">"{lead.message}"</p>
+                                
+                                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                                    <span className="flex items-center gap-1"><Mail size={14}/> {lead.email}</span>
+                                    <span className="flex items-center gap-1"><Phone size={14}/> {lead.buyerPhone}</span>
                                 </div>
-                                <span className={`flex-shrink-0 px-3 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadgeColor(lead.status)}`}>
-                                    {lead.status}
-                                </span>
                             </div>
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusBadgeColor(lead.status)}`}>
+                                {lead.status}
+                            </span>
+                        </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
-                                <p className="text-gray-700">
-                                    **Email:** <a href={`mailto:${lead.email}`} className="text-blue-600 hover:underline">{lead.email}</a>
-                                </p>
-                                <p className="text-gray-700">
-                                    **Phone:** {lead.phone ? <a href={`tel:${lead.phone}`} className="text-blue-600 hover:underline">{lead.phone}</a> : 'N/A'}
-                                </p>
-                            </div>
+                        <div className="mt-6 pt-4 border-t flex flex-wrap gap-3">
+                            {/* THE WHATSAPP ACTION */}
+                            <button 
+                                onClick={() => openWhatsApp(lead.buyerPhone, lead.buyerName, propertyTitle)}
+                                className="flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition"
+                            >
+                                <MessageCircle size={18} /> Chat on WhatsApp
+                            </button>
 
-                            <div className="p-4 bg-gray-50 border rounded-lg mb-4">
-                                <p className="font-semibold text-gray-700 mb-2">Inquiry Message:</p>
-                                <p className="text-gray-600 italic">"{lead.message}"</p>
-                            </div>
-
-                            {/* Action Buttons: Status Updates - Enhanced Responsiveness */}
-                            <div className="flex flex-wrap gap-3 pt-3 border-t">
-                                <button
-                                    onClick={() => updateLeadStatus(lead._id, 'Contacted')}
-                                    disabled={lead.status === 'Contacted' || lead.status === 'Qualified'}
-                                    className="flex-grow sm:flex-grow-0 px-4 py-2 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:bg-gray-400 transition"
-                                >
-                                    Mark as Contacted
-                                </button>
-                                <button
-                                    onClick={() => updateLeadStatus(lead._id, 'Qualified')}
-                                    disabled={lead.status === 'Qualified'}
-                                    className="flex-grow sm:flex-grow-0 px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition"
-                                >
-                                    Mark as Qualified
-                                </button>
-                                <button
-                                    onClick={() => updateLeadStatus(lead._id, 'Lost')}
-                                    className="flex-grow sm:flex-grow-0 px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition"
-                                >
-                                    Mark as Lost
-                                </button>
+                            <div className="flex gap-2 ml-auto">
+                                <button onClick={() => updateLeadStatus(lead.id, 'QUALIFIED')} className="px-3 py-2 text-xs border rounded-lg hover:bg-green-50">Mark Qualified</button>
+                                <button onClick={() => updateLeadStatus(lead.id, 'LOST')} className="px-3 py-2 text-xs border rounded-lg hover:bg-red-50 text-red-600">Mark Lost</button>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }

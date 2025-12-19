@@ -15,6 +15,30 @@ const formSteps = [
   "Images",
   "Review",
 ];
+// ... (Your imports and INPUT_CLASS remain same)
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  if (currentStep !== 3 || !isStepValid(3)) return;
+
+  // Prepare standard JSON payload
+  // Note: For real images, you'd upload to Cloudinary first and get URLs
+  const payload = {
+    ...form,
+    price: parseFloat(form.price),
+    images: ["https://placehold.co/600x400"] // Placeholder for demo
+  };
+
+  try {
+    const res = await api.post("/properties", payload);
+    if (res.status === 201) {
+      setCurrentStep(4);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  } catch (err) {
+    alert("Failed to submit property. Check server console.");
+  }
+}
 
 export default function AddProperty() {
   const [currentStep, setCurrentStep] = useState(1);

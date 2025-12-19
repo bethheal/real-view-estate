@@ -4,18 +4,16 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// SIGNUP
+// SIGNUP (existing code - updated)
 export const signup = async (req, res) => {
-  // Include role in destructuring
   const { name, email, phone, password, confirmPassword, role } = req.body;
 
   try {
-    // Validate all fields including role
     if (!name || !email || !phone || !password || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Validate role
+    // Prevent admin signup through regular endpoint
     const validRoles = ["BUYER", "AGENT"];
     const formattedRole = role?.toUpperCase() || "BUYER";
 
@@ -25,13 +23,11 @@ export const signup = async (req, res) => {
         .json({ message: "Role must be either BUYER or AGENT" });
     }
 
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    // Validate phone
     const phoneRegex = /^(?:\+233|0)\d{9}$/;
     if (!phoneRegex.test(phone)) {
       return res.status(400).json({ message: "Invalid phone number format" });
@@ -45,28 +41,24 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "Password too weak" });
     }
 
-    // Validate password match
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    // Check if email already exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // Hash password
     const hashPass = await bcrypt.hash(password, 8);
 
-    // Create user
     const user = await prisma.user.create({
       data: {
         name,
         email,
         phone,
         password: hashPass,
-        roles: [role.toUpperCase()], // now it’s a Role[]
+        roles: [formattedRole],
       },
     });
 
@@ -76,7 +68,7 @@ export const signup = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
-      role: user.role,
+      roles: user.roles,
     });
   } catch (error) {
     console.log("signup error: ", error);
@@ -86,7 +78,7 @@ export const signup = async (req, res) => {
   }
 };
 
-// LOGIN
+// LOGIN (existing code)
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -97,14 +89,18 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
+    // Prevent admin login through regular endpoint
+    if (user.roles.includes("ADMIN")) {
+      return res.status(403).json({ message: "Please use admin login endpoint" });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Generate token with stored role
     const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
+      { userId: user.id, email: user.email, roles: user.roles },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -116,10 +112,56 @@ export const login = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
-      role: user.role,
+      roles: user.roles,
     });
   } catch (error) {
     console.log("Login error", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// ADMIN LOGIN
+export const adminLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Check if user has ADMIN role
+    if (!user.roles.includes("ADMIN")) {
+      return res.status(403).json({ message: "Unauthorized access" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Generate token with admin privileges
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, roles: user.roles, isAdmin: true },
+      process.env.JWT_SECRET,
+      { expiresIn: "8h" } // Shorter expiry for admin sessions
+    );
+
+    res.status(200).json({
+      message: "Admin login successful",
+      token,
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      roles: user.roles,
+    });
+  } catch (error) {
+    console.log("Admin login error", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -419,20 +419,33 @@ export default function AgentProfile() {
   });
   const [passwordStep, setPasswordStep] = useState("form");
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+useEffect(() => {
+  fetchProfile();
+}, []);
 
-  const fetchProfile = async () => {
-    try {
-      const res = await api.get("/agent/profile");
-      setAgent((prev) => ({ ...prev, email: res.data.email }));
-    } catch {
-      toast.error("Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchProfile = async () => {
+  try {
+    const res = await api.get("/agent/profile");
+
+    // Update all relevant fields
+    setAgent({
+      name: res.data.name || "",
+      email: res.data.email || "",
+      phone: res.data.phone || "",
+      businessName: res.data.businessName || "",
+      socialLinks: res.data.socialLinks || { facebook: "", instagram: "", twitter: "" },
+    });
+
+    // If your API returns avatar URL, you can also set preview
+    if (res.data.avatarUrl) setAvatarPreview(res.data.avatarUrl);
+
+  } catch (err) {
+    toast.error("Failed to load profile");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;

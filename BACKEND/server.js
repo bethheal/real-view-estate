@@ -3,7 +3,10 @@ import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
-import { PrismaClient } from "@prisma/client";
+import propertyRoutes from "./routes/propertyRoutes.js";
+import leadRoutes from "./routes/leadRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";import { PrismaClient } from "@prisma/client";
+// import profileRoutes from "./routes/profileRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -26,10 +29,17 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("API is running on Render!");
 });
+app.get("/test", (req, res) => {
+  res.send("✅ Backend is working!");
+});
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api", dashboardRoutes);
-
+app.use("/api/properties", propertyRoutes);
+app.use("/api/leads", leadRoutes);
+app.use("/api/admin", adminRoutes);
+// app.use("/api", profileRoutes);
 // ------------ DATABASE CONNECTION ----------------
 const prisma = new PrismaClient();
 

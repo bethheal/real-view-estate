@@ -1,8 +1,6 @@
 // App.jsx
 import React, { Suspense, useState } from "react";
 import { Routes, Route } from "react-router-dom";
-import "./App.css";
-
 // Layouts
 import RootLayout from "./globalComponents/RootLayout";
 import AuthLayout from "./globalComponents/AuthLayout";
@@ -50,6 +48,7 @@ import BrowseProperties from "./pages/Buyer/BrowseProperties";
 import SavedProperties from "./pages/Buyer/SavedProperties";
 import BuyerChatInbox from "./pages/Buyer/messages";
 import BuyerProfile from "./pages/Buyer/Profile";
+import AdminLoginPage from "./pages/admin/AdminLogin";
 
 function App() {
         const [savedProperties, setSavedProperties] = useState([]);
@@ -70,6 +69,8 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<SignUp />} />
+        <Route path="admin/login" element={<AdminLoginPage />} />
+
         </Route>
 
         {/* BUYER DASHBOARD */}
@@ -101,10 +102,10 @@ function App() {
 
         {/* ADMIN DASHBOARD */}
         <Route element={<AdminLayout />}>
-          <Route path="admin-dashboard" element={<AdminDashboard />} />
-          <Route path="admin-subscriptions" element={<Subscriptions />} />
-          <Route path="admin-agents" element={<AdminAgents />} />
-          <Route path="admin-property-review" element={<PropertyReview />} />
+          <Route path="admin/dashboard" element={<AdminDashboard />} />
+          <Route path="admin/subscriptions" element={<Subscriptions />} />
+          <Route path="admin/agents" element={<AdminAgents />} />
+          <Route path="admin/properties" element={<PropertyReview />} />
         </Route>
       </Routes>
 

@@ -7,17 +7,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  BUYER
-  AGENT
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role       Role     @default(BUYER)       // default role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  agent     Agent?
+  buyer     Buyer?
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
+model Agent {
+  id           String  @id @default(uuid())
+  user         User    @relation(fields: [userId], references: [id])
+  userId       String  @unique
+  name         String
+  phone        String
+  businessName String?
+  avatarUrl    String?
+  socialLinks  Json
+  documents    String?
+
+  properties Property[] // Back-reference to Property
+}
+
+model Buyer {
+  id        String  @id @default(uuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @unique
   name      String
-  email     String   @unique
-  phone     String   @unique
-  password  String
-  roles     Role[]   // <-- MULTIPLE ROLES
+  phone     String
+  avatarUrl String?
+  interests Json?
+}
+
+model Property {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  location    String
+  images      Json
+  createdAt   DateTime @default(now())
+
+  agent   Agent?  @relation(fields: [agentId], references: [id])
+  agentId String?
+
+  leads Lead[]
+}
+
+model Lead {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  message   String?
   createdAt DateTime @default(now())
+
+  property   Property? @relation(fields: [propertyId], references: [id])
+  propertyId String?
+}
+
+enum Role {
+  AGENT
+  BUYER
+  ADMIN
 }

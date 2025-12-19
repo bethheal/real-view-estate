@@ -5,6 +5,14 @@ import PropertyDetailsModal from "./propertiesModal";
 export default function BrowseProperties({savedProperties, setSavedProperties}) {
   const [selectedProperty, setSelectedProperty] = useState(null);
 
+  useEffect(() => {
+    const getProperties = async () => {
+        const res = await api.get('/properties/browse');
+        setProperties(res.data); // Update state from backend
+    };
+    getProperties();
+}, []);
+
   // Inside BrowseProperties
   const toggleSave = (property) => {
     setSavedProperties((prev) => {

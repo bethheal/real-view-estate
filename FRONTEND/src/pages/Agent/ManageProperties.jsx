@@ -4,38 +4,15 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
 // ------------------ DUMMY DATA ------------------
-const DUMMY_PROPERTIES_DATA = [
-  {
-    _id: "prop-live-1",
-    title: "Luxury Duplex - Airport View",
-    type: "Sale",
-    price: 3500000.0,
-    status: "approved",
-    images: ["https://via.placeholder.com/150/008080/FFFFFF?text=Approved+1"],
-    rejectionReason: null,
-    leadCount: 5,
-  },
-  {
-    _id: "prop-pending-2",
-    title: "1-Bedroom Apartment - Cantonments",
-    type: "Rent",
-    price: 7500.0,
-    status: "pending",
-    images: ["https://via.placeholder.com/150/FFD700/000000?text=Pending+2"],
-    rejectionReason: null,
-    leadCount: 0,
-  },
-  {
-    _id: "prop-rejected-3",
-    title: "Land Plot - Tema Industrial Area",
-    type: "Sale",
-    price: 180000.0,
-    status: "rejected",
-    images: ["https://via.placeholder.com/150/FF0000/FFFFFF?text=Rejected+3"],
-    rejectionReason: "Missing land title document.",
-    leadCount: 2,
-  },
-];
+const fetchAgentProperties = async () => {
+    try {
+        const res = await api.get(`/agent/my-properties?agentId=${currentAgentId}`);
+        setProperties(res.data);
+        setLoading(false);
+    } catch (err) {
+        toast.error("Error loading properties");
+    }
+};
 // ------------------------------------------------
 
 export default function ManageProperties() {

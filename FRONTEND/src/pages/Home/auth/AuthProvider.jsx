@@ -11,45 +11,72 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      api
-        .get("/user/profile", { headers: { Authorization: `Bearer ${token}` } })
-        .then((res) => setUser(res.data.user || res.data))
-        .catch(() => logout());
+    const role = localStorage.getItem("role");
+
+    if (!token || !role) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    const profileUrl =
+      role === "ADMIN" ? "/admin/profile" : "/user/profile";
+
+    api
+      .get(profileUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        setUser({ ...(res.data.user || res.data), role });
+      })
+      .catch(() => logout())
+      .finally(() => setLoading(false));
   }, []);
 
-  // Login
+  // 🔑 SINGLE LOGIN FUNCTION
   const login = async (email, password, role) => {
-    const res = await api.post("/auth/login", { email, password, role: role.toUpperCase() });
+    const isAdmin = role === "admin";
+
+    const url = isAdmin ? "/auth/admin/login" : "/auth/login";
+
+    const res = await api.post(url, {
+      email,
+      password,
+      role: role.toUpperCase(),
+    });
+
     localStorage.setItem("token", res.data.token);
-    setUser(res.data.user || res.data);
-    navigate(role === "agent" ? "/agent-dashboard" : "/buyer-dashboard");
+    localStorage.setItem("role", role.toUpperCase());
+
+    setUser({ ...(res.data.user || res.data), role: role.toUpperCase() });
+
+    // Redirects
+    if (isAdmin) navigate("/admin/dashboard");
+    else if (role === "agent") navigate("/agent-dashboard");
+    else navigate("/buyer-dashboard");
   };
 
-  // Signup
   const signUp = async (data) => {
     const res = await api.post("/auth/signup", data);
     if (res.data.token) localStorage.setItem("token", res.data.token);
     return res.data;
   };
 
-  // Forgot password
   const forgotPassword = async (email) => {
     const res = await api.post("/auth/forgot-password", { email });
     return res.data.message;
   };
 
-  // Logout
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
     setUser(null);
     navigate("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signUp, forgotPassword, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, signUp, forgotPassword, logout }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );

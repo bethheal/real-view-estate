@@ -361,29 +361,27 @@ export default function BuyerProfile() {
   const [passwordStep, setPasswordStep] = useState("form");
 
   // 2. Fetch Profile Hook
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+ useEffect(() => {
+  fetchProfile();
+}, []);
 
-  const fetchProfile = async () => {
-    try {
-      // NOTE: Update this API endpoint to your buyer profile endpoint
-      const res = await api.get("/buyer/profile"); 
-      setBuyer({
-        name: res.data.name || "",
-        email: res.data.email || user?.email || "",
-        phone: res.data.phone || "",
-      });
-      // Optionally set an existing avatar URL for preview if your API returns it
-      if (res.data.avatarUrl) {
-          setAvatarPreview(res.data.avatarUrl);
-      }
-    } catch {
-      toast.error("Failed to load buyer profile");
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchProfile = async () => {
+  try {
+    const res = await api.get("/buyer/profile"); // Your API endpoint
+    setBuyer({
+      name: res.data.name || "",
+      email: res.data.email || user?.email || "",
+      phone: res.data.phone || "",
+    });
+    if (res.data.avatarUrl) setAvatarPreview(res.data.avatarUrl);
+  } catch (error) {
+    toast.error("Failed to load buyer profile");
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 3. Handlers
   const handleChange = (e) => {

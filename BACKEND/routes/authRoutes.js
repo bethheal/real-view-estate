@@ -1,23 +1,21 @@
 import express from "express";
 import passport from "passport"; 
 import jwt from "jsonwebtoken"; 
-import { login, signup } from "../controllers/authController.js";
-import { forgotPassword, resetPassword } from "../controllers/passwordControllers.js";
+import { adminLogin, login, signup } from "../controllers/authController.js";
+import { forgotPassword, resetPassword } from "../controllers/passwordController.js";
 
 const router = express.Router();
 
+// Auth endpoints
 router.post("/signup", signup);
-router.post("/login",login)
+router.post("/login", login);
+router.post("/admin/login", adminLogin);
 
-
-//Google Auth Route (Optional)
-// router.post("/signup", signup);
-// router.post("/login", login);
-
-//forgot password and reset password routes can be added here
+// Password reset endpoints
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-// Google OAuth
+
+// Google OAuth (optional)
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 router.get(

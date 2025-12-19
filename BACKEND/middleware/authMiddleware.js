@@ -21,13 +21,34 @@ export const verifyToken = (req, res, next) => {
     res.status(401).json({ message: "Invalid or expired token" });
   }
 };
-// Middleware to permit roles
 export const permit = (...allowedRoles) => {
   return (req, res, next) => {
-    const { role } = req.user;
-    if (!allowedRoles.includes(role)) {
-      return res.status(403).json({ message: 'Forbidden: insufficient role' });
+    const userRoles = req.user?.roles;
+
+    if (!Array.isArray(userRoles)) {
+      return res
+        .status(403)
+        .json({ message: "Roles not found on token" });
     }
+
+    const hasPermission = allowedRoles.some((role) =>
+      userRoles.includes(role)
+    );
+
+    if (!hasPermission) {
+      return res.status(403).json({
+        message: "Forbidden: insufficient permissions",
+      });
+    }
+
     next();
   };
+};
+
+
+export const requireAdmin = (req, res, next) => {
+  if (!req.user?.roles?.includes("ADMIN")) {
+    return res.status(403).json({ message: "Admins only" });
+  }
+  next();
 };

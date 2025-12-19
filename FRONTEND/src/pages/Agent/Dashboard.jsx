@@ -3,71 +3,61 @@ import { api } from "../../config/axios";
 import { toast } from "react-toastify";
 import { Home, CheckCircle, Clock, XCircle, TrendingUp, Users, Zap, BarChart2 } from "lucide-react";
 
-// --- DUMMY DATA FOR DEMONSTRATION ---
-const DUMMY_STATS = {
-    totalProperties: 18,
-    approved: 12,
-    pending: 4,
-    rejected: 2,
-    monthlyLeads: 45,
-};
 
-// Data structure for the performance chart (Leads & Closures)
-const DUMMY_PERFORMANCE_DATA = {
-    monthlyLeads: [15, 22, 18, 25, 30, 45], // Example lead counts for 6 months/weeks
-    monthlyClosures: [2, 4, 3, 5, 6, 8],    // Example closure counts for 6 months/weeks
-    labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-};
-
-// Data for the summary analysis
-const DUMMY_ANALYSIS = {
-    leadConversionRate: 17.7, // (8 closures / 45 leads) * 100
-    leadsPerProperty: (45 / 12).toFixed(1), // 45 leads / 12 approved properties
-    highestPerformingProperty: "Luxury Duplex - Airport View",
-    lowPerformingProperties: 3,
-};
 
 const AgentDashboard = () => {
-    const [stats, setStats] = useState(DUMMY_STATS);
-    const [performanceData, setPerformanceData] = useState(DUMMY_PERFORMANCE_DATA);
-    const [analysis, setAnalysis] = useState(DUMMY_ANALYSIS);
+const [stats, setStats] = useState({
+  totalProperties: 0,
+  approved: 0,
+  pending: 0,
+  rejected: 0,
+  monthlyLeads: 0
+});
+
+const [performanceData, setPerformanceData] = useState({
+  labels: [],
+  monthlyLeads: [],
+  monthlyClosures: []
+});
+
+const [analysis, setAnalysis] = useState({
+  leadConversionRate: 0,
+  leadsPerProperty: 0,
+  highestPerformingProperty: "—",
+  lowPerformingProperties: 0
+});
+
     const [recentLeads, setRecentLeads] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchDashboard();
-    }, []);
+  useEffect(() => {
+  fetchDashboard();
+}, []);
 
-    const fetchDashboard = async () => {
-        try {
-            // In a real app: 
-            // const res = await api.get("/agent/dashboard-stats");
-            // setStats(res.data.stats);
-            // setRecentLeads(res.data.recentLeads);
-            // setPerformanceData(res.data.performance);
-            // setAnalysis(res.data.analysis);
-            
-            // DUMMY: Simulate API delay and set hardcoded dummy data
-            setTimeout(() => {
-                setStats(DUMMY_STATS);
-                setPerformanceData(DUMMY_PERFORMANCE_DATA);
-                setAnalysis(DUMMY_ANALYSIS);
-                
-                // Add dummy leads for the table
-                setRecentLeads([
-                    { _id: 'l1', name: 'Akua Mensah', contact: 'akua@test.com', propertyTitle: 'Luxury Duplex', status: 'new', createdAt: new Date() },
-                    { _id: 'l2', name: 'Kofi Boateng', contact: 'kofi@email.com', propertyTitle: 'Studio Apartment', status: 'contacted', createdAt: new Date() - 86400000 },
-                    { _id: 'l3', name: 'Ama Owusu', contact: '+233 24 123 4567', propertyTitle: 'Beachfront Villa', status: 'new', createdAt: new Date() - 172800000 },
-                ]);
+const fetchDashboard = async () => {
+  try {
+    const res = await api.get("/dashboard/agent/stats");
 
-                setLoading(false);
-            }, 800);
+    setStats(res.data.stats);
 
-        } catch (err) {
-            toast.error("Failed to load dashboard");
-            setLoading(false);
-        }
-    };
+    setRecentLeads(
+      res.data.recentLeads.map(lead => ({
+        _id: lead.id,
+        name: lead.buyerName,
+        contact: lead.buyerEmail || lead.buyerPhone,
+        propertyTitle: lead.property.title,
+        status: lead.status.toLowerCase(),
+        createdAt: lead.createdAt
+      }))
+    );
+
+    setLoading(false);
+  } catch (err) {
+    toast.error("Failed to load dashboard");
+    setLoading(false);
+  }
+};
+
     
     // Helper function for the graph placeholder styling
     const getBarHeight = (value, max) => `${(value / max) * 100}%`;

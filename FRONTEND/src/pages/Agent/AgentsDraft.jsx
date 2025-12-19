@@ -1,69 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; 
 
-// --- Dummy Data ---
-const DRAFT_PROPERTIES_DATA = [
-    {
-        id: "prop-1234",
-        agentId: "user-agent",
-        status: "PENDING",
-        createdAt: "2025-12-06T19:30:00.000Z",
-        details: {
-            unitName: "The Lakeside Duplex",
-            propertyType: "House",
-            transactionType: "Sale",
-            location: "Accra, East Legon",
-            dimensions: "2,800 sqft",
-            price: 1500000.00,
-            currency: "GHS"
-        },
-        images: [
-            { url: "https://via.placeholder.com/224x160/F37A2A/FFFFFF?text=Draft+House+1", isPrimary: true },
-        ],
-        bedrooms: 4,
-        bathrooms: 3
-    },
-    {
-        id: "prop-5678",
-        agentId: "user-agent",
-        status: "DRAFT", 
-        createdAt: "2025-12-05T10:00:00.000Z",
-        details: {
-            unitName: "Studio Apartment near Airport",
-            propertyType: "Apartment",
-            transactionType: "Rent",
-            location: "Accra, Airport Residential Area",
-            dimensions: "450 sqft",
-            price: 4500.00,
-            currency: "GHS"
-        },
-        images: [
-            { url: "https://via.placeholder.com/224x160/F37A2A/FFFFFF?text=Draft+Apt+2", isPrimary: true },
-        ],
-        bedrooms: 1,
-        bathrooms: 1
-    },
-    {
-        id: "prop-9012",
-        agentId: "user-agent",
-        status: "REJECTED", 
-        createdAt: "2025-12-04T12:00:00.000Z",
-        details: {
-            unitName: "Coastal Land Parcel",
-            propertyType: "Land",
-            transactionType: "Sale",
-            location: "Kasoa, Central Region",
-            dimensions: "5 acres",
-            price: 250000.00,
-            currency: "GHS"
-        },
-        images: [
-            { url: "https://via.placeholder.com/224x160/F37A2A/FFFFFF?text=Rejected+Land+3", isPrimary: true },
-        ],
-        bedrooms: 0,
-        bathrooms: 0
-    },
-];
+import { api } from "../../config/axios"; // Your axios instance
+
+
+// --- Main Component ---
+export default function AgentDrafts() {
+    const [drafts, setDrafts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+useEffect(() => {
+    const fetchDrafts = async () => {
+        try {
+            setIsLoading(true);
+            const response = await api.get('/properties/drafts');
+            setDrafts(response.data);
+        } catch (err) {
+            setError("Could not load your drafts. Please try again later.");
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    fetchDrafts();
+}, []);
+const handleDelete = async (id) => {
+        if (window.confirm("Delete this property permanently?")) {
+            try {
+                await api.delete(`/properties/${id}`);
+                setDrafts(prev => prev.filter(item => item.id !== id));
+            } catch (err) {
+                alert("Could not delete. Try again.");
+            }
+        }
+    };
 
 // --- Helper Functions ---
 const getStatusBadge = (status) => {
@@ -81,13 +53,6 @@ const getStatusBadge = (status) => {
             return <span className={`${baseClasses} text-blue-800 bg-blue-200`}>{status}</span>;
     }
 };
-
-// --- Main Component ---
-export default function AgentDrafts() {
-    const [drafts, setDrafts] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-
     useEffect(() => {
         setTimeout(() => {
              setDrafts(DRAFT_PROPERTIES_DATA);
@@ -99,12 +64,7 @@ export default function AgentDrafts() {
         alert(`Navigating to edit property: ${id}`);
     };
 
-    const handleDelete = (id) => {
-        if (window.confirm("Are you sure you want to permanently delete this draft?")) {
-            setDrafts(drafts.filter(draft => draft.id !== id));
-        }
-    };
-
+    
     if (isLoading) {
         return <div className="text-center p-12 text-gray-600 animate-pulse">Loading drafts...</div>;
     }

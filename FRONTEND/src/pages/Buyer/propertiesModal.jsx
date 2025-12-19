@@ -1,8 +1,20 @@
 import { X, Phone, Mail, MessageCircle } from "lucide-react";
+import { api } from "../../config/axios"; // Import your axios instance
+import { toast } from "react-toastify";
 
 export default function PropertyDetailsModal({ property, onClose }) {
   if (!property) return null;
 
+  // Function to notify backend that the agent was contacted
+  const handleContactClick = async () => {
+    try {
+      await api.post(`/properties/${property.id}/inquiry`);
+      // We don't necessarily need to show a success toast here 
+      // unless you want the buyer to know their interest was logged.
+    } catch (err) {
+      console.error("Could not log lead", err);
+    }
+  };
   const agent = property.agent || {
     name: "Unknown Agent",
     phone: "N/A",
@@ -12,9 +24,8 @@ export default function PropertyDetailsModal({ property, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="bg-white w-[95%] max-w-3xl rounded-xl shadow-lg p-6 relative max-h-[90vh] overflow-y-auto">
-
         {/* Close */}
         <button
           className="absolute top-4 right-4 text-gray-600 hover:text-black"
@@ -51,9 +62,8 @@ export default function PropertyDetailsModal({ property, onClose }) {
         </div>
 
         {/* Agent Contact */}
-        <div className="p-4 border rounded-lg bg-gray-50">
+       <div className="p-4 border rounded-lg bg-gray-50">
           <h3 className="text-lg font-bold mb-3">Contact Agent</h3>
-
           <div className="flex items-center gap-3 mb-4">
             <img
               src={agent.avatar}
@@ -66,18 +76,28 @@ export default function PropertyDetailsModal({ property, onClose }) {
           </div>
 
           <div className="space-y-2">
-            <a href={`tel:${agent.phone}`} className="flex items-center gap-2 text-blue-600">
+            <a 
+              href={`tel:${agent.phone}`} 
+              onClick={handleContactClick}
+              className="flex items-center gap-2 text-blue-600"
+            >
               <Phone size={16} /> {agent.phone}
             </a>
 
-            <a href={`mailto:${agent.email}`} className="flex items-center gap-2 text-green-600">
+            <a 
+              href={`mailto:${agent.email}`} 
+              onClick={handleContactClick}
+              className="flex items-center gap-2 text-green-600"
+            >
               <Mail size={16} /> {agent.email}
             </a>
 
             <a
               href={`https://wa.me/${agent.phone}`}
+              onClick={handleContactClick}
               className="flex items-center gap-2 text-green-500"
               target="_blank"
+              rel="noreferrer"
             >
               <MessageCircle size={16} /> WhatsApp Agent
             </a>

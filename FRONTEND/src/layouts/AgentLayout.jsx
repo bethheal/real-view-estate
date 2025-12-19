@@ -1,39 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import { useAuth } from "../pages/Home/auth/AuthProvider";
+import axios from "axios";
 import { 
-  LayoutDashboard, 
-  PlusCircle, 
-  Home, 
-  FileText, 
-  Users, 
-  BarChart2, 
-  CreditCard, 
-  MessageSquare, 
-  User, 
-  Settings, 
-  LogOut,
-  Menu, // Added Menu icon for mobile toggle
-  X     // Added X icon to close mobile menu
+  LayoutDashboard, PlusCircle, Home, FileText, Users, CreditCard,
+  MessageSquare, User, Settings, LogOut, Menu, X
 } from "lucide-react";
 
 export default function AgentLayout() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth(); // logout from auth context
+  const [user, setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  const userFirstName = user?.firstName || "Agent";
-  const avatarLetter = userFirstName.charAt(0).toUpperCase();
 
-  // Helper to toggle sidebar
+useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      const res = await api.get("/agent/me"); // no need to manually add token
+      setUser(res.data);
+    } catch (err) {
+      console.error("Failed to fetch agent profile:", err);
+    }
+  };
+  fetchProfile();
+}, []);
+
+  const userFirstName = user?.name?.split(" ")[0] || "Agent";
+  const avatarLetter = user?.avatarUrl ? null : userFirstName.charAt(0).toUpperCase();
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  
-  // Close sidebar when clicking a link (mobile UX)
   const closeSidebar = () => setIsSidebarOpen(false);
 
   const NavItem = ({ to, icon: Icon, label }) => (
     <NavLink
       to={to}
-      onClick={closeSidebar} // Close menu on selection for mobile
+      onClick={closeSidebar}
       className={({ isActive }) =>
         `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium text-sm ${
           isActive
@@ -49,8 +49,7 @@ export default function AgentLayout() {
 
   return (
     <div className="flex min-h-screen bg-[#FAEEDC]">
-      
-      {/* MOBILE OVERLAY: Visible only when sidebar is open on small screens */}
+      {/* Mobile overlay */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -58,22 +57,16 @@ export default function AgentLayout() {
         />
       )}
 
-      {/* SIDEBAR */}
-      <aside 
-        className={`
-      fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out
-      ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-      lg:translate-x-0 lg:h-screen lg:shadow-none lg:border-r lg:border-gray-100
-    `}
-      >
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 lg:h-screen lg:shadow-none lg:border-r lg:border-gray-100`}>
         
-        {/* Logo Section */}
+        {/* Logo */}
         <div className="p-6 md:p-8 pb-4 flex justify-between items-center">
           <h2 className="text-xl md:text-2xl font-extrabold text-[#F37A2A] tracking-tight flex items-center gap-2">
             <div className="w-8 h-8 bg-[#F37A2A] rounded-lg text-white flex items-center justify-center text-lg">K</div>
             Real View
           </h2>
-          {/* Close Button (Mobile Only) */}
           <button onClick={closeSidebar} className="lg:hidden text-gray-500 hover:text-red-500">
             <X size={24} />
           </button>
@@ -81,38 +74,30 @@ export default function AgentLayout() {
 
         {/* Navigation */}
         <nav className="flex-1 px-6 space-y-6 overflow-y-auto hide-scrollbar py-4">
-          
-          {/* Main */}
           <div className="space-y-1">
             <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Overview</p>
             <NavItem to="/agent-dashboard" icon={LayoutDashboard} label="Overview" />
           </div>
-
-          {/* Properties Section */}
           <div className="space-y-1">
             <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Properties</p>
             <NavItem to="/agent/add-property" icon={PlusCircle} label="Add Property" />
             <NavItem to="/agent/manage-properties" icon={Home} label="Manage Listings" />
             <NavItem to="/agent/drafts" icon={FileText} label="Drafts" />
           </div>
-
-          {/* Business Section */}
           <div className="space-y-1">
              <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Business</p>
             <NavItem to="/agent/leads" icon={Users} label="Leads" />
             <NavItem to="/agent/subscription" icon={CreditCard} label="Subscription" />
             <NavItem to="/agent/chats" icon={MessageSquare} label="Chats" />
           </div>
-
-           {/* Account Section */}
-           <div className="space-y-1">
+          <div className="space-y-1">
             <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Settings</p>
             <NavItem to="/agent/profile" icon={User} label="Profile" />
             <NavItem to="/agent/settings" icon={Settings} label="Settings" />
           </div>
         </nav>
 
-        {/* Logout Section */}
+        {/* Logout */}
         <div className="p-6 border-t border-gray-100">
           <button
             onClick={logout}
@@ -124,22 +109,16 @@ export default function AgentLayout() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
-      {/* Changed ml-72 to flex-1 and used logic to handle width */}
-  <main className="flex-1 ml-0 lg:ml-72 flex flex-col min-h-screen overflow-auto">
-        
-        {/* HEADER */}
-    <header className="sticky top-0 z-20 bg-[#FAEEDC]/95 backdrop-blur-sm px-4 md:px-8 py-4 md:py-8 flex justify-between items-center">
-          
+      {/* Main content */}
+      <main className="flex-1 ml-0 lg:ml-72 flex flex-col min-h-screen overflow-auto">
+        <header className="sticky top-0 z-20 bg-[#FAEEDC]/95 backdrop-blur-sm px-4 md:px-8 py-4 md:py-8 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            {/* Hamburger Menu (Mobile Only) */}
             <button 
               onClick={toggleSidebar} 
               className="lg:hidden p-2 -ml-2 text-gray-700 hover:bg-orange-100 rounded-lg transition-colors"
             >
               <Menu size={24} />
             </button>
-
             <div>
               <h1 className="text-xl md:text-2xl font-bold text-gray-800">
                 Welcome, <span className="text-[#F37A2A]">{userFirstName}</span>
@@ -147,16 +126,22 @@ export default function AgentLayout() {
               <p className="hidden md:block text-gray-500 text-sm mt-1">Here is an overview of your property stats today.</p>
             </div>
           </div>
-          
           <div className="flex gap-3">
-             <div className="w-10 h-10 bg-[#F37A2A] rounded-full shadow-md flex items-center justify-center text-white font-bold text-lg border-2 border-white ring-2 ring-orange-400">
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt="Avatar"
+                className="w-10 h-10 rounded-full shadow-md border-2 border-white ring-2 ring-orange-400 object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-[#F37A2A] rounded-full shadow-md flex items-center justify-center text-white font-bold text-lg border-2 border-white ring-2 ring-orange-400">
                 {avatarLetter}
-             </div>
+              </div>
+            )}
           </div>
         </header>
 
-        {/* PAGE CONTENT */}
-    <div className="flex-1 px-4 md:px-8 pb-8 overflow-auto">
+        <div className="flex-1 px-4 md:px-8 pb-8 overflow-auto">
           <Outlet />
         </div>
       </main>
