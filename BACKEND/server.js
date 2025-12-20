@@ -1,49 +1,36 @@
+
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
 import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import propertyRoutes from "./routes/propertyRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";import { PrismaClient } from "@prisma/client";
-// import profileRoutes from "./routes/profileRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import { PrismaClient } from "@prisma/client";
 
 dotenv.config();
 const app = express();
+const prisma = new PrismaClient();
 
-// ------------ CORS CONFIG (Local Only) ----------------
-// ------------ CORS CONFIG (Local Only) ----------------
-
+// ------------ CORS CONFIG ----------------
 app.use(cors({
   origin: ["http://localhost:5173", "https://real-view-estate.onrender.com"],
   credentials: true
 }));
 
-
-
-
 // ------------ BODY PARSER ----------------
 app.use(express.json());
 
 // ------------ API ROUTES ----------------
-app.get("/", (req, res) => {
-  res.send("API is running on Render!");
-});
-app.get("/test", (req, res) => {
-  res.send("✅ Backend is working!");
-});
-
-
 app.use("/api/auth", authRoutes);
-app.use('/api', adminRoutes);
 app.use("/api", dashboardRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/leads", leadRoutes);
 app.use("/api/admin", adminRoutes);
-// app.use("/api", profileRoutes);
-// ------------ DATABASE CONNECTION ----------------
-const prisma = new PrismaClient();
 
+// ------------ DATABASE CONNECTION ----------------
 async function connectDB() {
   try {
     await prisma.$connect();
@@ -53,8 +40,17 @@ async function connectDB() {
     process.exit(1);
   }
 }
-
 connectDB();
+
+// ------------ SERVE REACT FRONTEND ----------------
+// Change "../frontend/dist" to your React build folder path
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+// Catch-all route for React Router
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
 
 // ------------ START SERVER ----------------
 const PORT = process.env.PORT || 5000;
