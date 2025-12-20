@@ -23,7 +23,7 @@ const createAdmin = async () => {
       email: "admin@admin.com",    // Admin's email (must be unique)
       phone: "0554345443",             // Admin's phone number
       password: "Admin@2025",            // Admin's password (plain text - will be hashed)
-      roles: ["ADMIN"],                   // User role - must be ADMIN
+      role: "ADMIN",                   // User role - must be ADMIN
     };
 
     console.log(`\n📧 Checking if admin exists: ${adminData.email}`);
@@ -48,15 +48,16 @@ const createAdmin = async () => {
     console.log("👤 Creating admin user...");
 
     // Create the admin user in the database
-    const admin = await prisma.user.create({
-      data: {
-        name: adminData.name,
-        email: adminData.email,
-        phone: adminData.phone,
-        password: hashedPassword,
-        roles: adminData.roles,
-      },
-    });
+   const admin = await prisma.user.create({
+  data: {
+    name: adminData.name,
+    email: adminData.email,
+    phone: adminData.phone,
+    password: hashedPassword,
+    role: "ADMIN", // enum Role
+  },
+});
+
 
     // Display success message with credentials
     console.log("\n✅ Admin created successfully!");

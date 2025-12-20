@@ -5,7 +5,10 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "create-admin": "node scripts/createAdmin.js"
+
+
   },
   "keywords": [],
   "author": "",

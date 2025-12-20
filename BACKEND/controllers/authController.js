@@ -58,7 +58,7 @@ export const signup = async (req, res) => {
         email,
         phone,
         password: hashPass,
-        roles: [formattedRole],
+        role: [formattedRole],
       },
     });
 
@@ -68,7 +68,7 @@ export const signup = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
-      roles: user.roles,
+      role: user.role,
     });
   } catch (error) {
     console.log("signup error: ", error);
@@ -90,7 +90,7 @@ export const login = async (req, res) => {
     }
 
     // Prevent admin login through regular endpoint
-    if (user.roles.includes("ADMIN")) {
+    if (user.role.includes("ADMIN")) {
       return res.status(403).json({ message: "Please use admin login endpoint" });
     }
 
@@ -100,7 +100,7 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email, roles: user.roles },
+      { userId: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -112,7 +112,7 @@ export const login = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
-      roles: user.roles,
+      role: user.role,
     });
   } catch (error) {
     console.log("Login error", error);
@@ -136,7 +136,7 @@ export const adminLogin = async (req, res) => {
     }
 
     // Check if user has ADMIN role
-    if (!user.roles.includes("ADMIN")) {
+    if (!user.role.includes("ADMIN")) {
       return res.status(403).json({ message: "Unauthorized access" });
     }
 
@@ -147,7 +147,7 @@ export const adminLogin = async (req, res) => {
 
     // Generate token with admin privileges
     const token = jwt.sign(
-      { userId: user.id, email: user.email, roles: user.roles, isAdmin: true },
+      { userId: user.id, email: user.email, role: user.role, isAdmin: true },
       process.env.JWT_SECRET,
       { expiresIn: "8h" } // Shorter expiry for admin sessions
     );
@@ -158,7 +158,7 @@ export const adminLogin = async (req, res) => {
       userId: user.id,
       name: user.name,
       email: user.email,
-      roles: user.roles,
+      role: user.role,
     });
   } catch (error) {
     console.log("Admin login error", error);
