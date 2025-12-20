@@ -35,6 +35,7 @@ app.get("/test", (req, res) => {
 
 
 app.use("/api/auth", authRoutes);
+app.use('/api', adminRoutes);
 app.use("/api", dashboardRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/leads", leadRoutes);
