@@ -58,7 +58,7 @@ export const signup = async (req, res) => {
         email,
         phone,
         password: hashPass,
-        role: [formattedRole],
+        role: formattedRole,
       },
     });
 
